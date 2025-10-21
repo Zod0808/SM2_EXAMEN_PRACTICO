@@ -235,6 +235,16 @@ const VisitaSchema = new mongoose.Schema({
 }, { collection: 'visitas', strict: false, _id: false });
 const Visita = mongoose.model('visitas', VisitaSchema);
 
+// ==================== IMPORTAR RUTAS MODULARES ====================
+
+// Rutas de Historial de Sesiones (Historia de Usuario #1 - Examen)
+const historialSesionRoutes = require('./routes/historialSesionRoutes');
+
+// ==================== REGISTRAR RUTAS MODULARES ====================
+
+// Registrar rutas de historial de sesiones
+app.use('/historial-sesiones', historialSesionRoutes);
+
 // ==================== RUTAS ====================
 
 // Ruta de prueba raíz
@@ -248,10 +258,11 @@ app.get('/', (req, res) => {
       asistencias: "/asistencias",
       externos: "/externos",
       visitas: "/visitas",
-      login: "/login"
+      login: "/login",
+      historialSesiones: "/historial-sesiones" // NUEVO
     },
     database: "ASISTENCIA - MongoDB Atlas",
-    status: "Sprint 1 Completo 🚀"
+    status: "Sprint 1 Completo 🚀 - Examen US#1 ✅"
   });
 });
 
