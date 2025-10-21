@@ -4,7 +4,7 @@
 
 | Campo | Información |
 |-------|-------------|
-| **Curso** | Sistemas Móviles II |
+| **Curso** | Soluciones Móviles II |
 | **Alumno** | Cesar Fabian Chávez Linares |
 | **Fecha** | 21 de Octubre de 2025 |
 | **Repositorio** | [https://github.com/Zod0808/SM2_EXAMEN_PRACTICO.git](https://github.com/Zod0808/SM2_EXAMEN_PRACTICO.git) |

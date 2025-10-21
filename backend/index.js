@@ -251,18 +251,37 @@ app.use('/historial-sesiones', historialSesionRoutes);
 app.get('/', (req, res) => {
   res.json({
     message: "API Sistema Control Acceso NFC - FUNCIONANDO ✅",
+    version: "1.0.0",
+    examen: "Unidad II - Móviles II ✅",
+    historias_implementadas: {
+      us1: "Historial de Inicios de Sesión ✅",
+      us2: "Cambio de Contraseña Personal ✅"
+    },
     endpoints: {
+      // Endpoints originales
       alumnos: "/alumnos",
-      facultades: "/facultades", 
+      facultades: "/facultades",
       usuarios: "/usuarios",
       asistencias: "/asistencias",
       externos: "/externos",
       visitas: "/visitas",
       login: "/login",
-      historialSesiones: "/historial-sesiones" // NUEVO
+      
+      // Nuevos endpoints del examen
+      historialSesiones: "/historial-sesiones",
+      changePassword: "/auth/change-password"
+    },
+    endpoints_historial: {
+      registrar: "POST /historial-sesiones",
+      cerrar: "PATCH /historial-sesiones/:id/cerrar",
+      obtener: "GET /historial-sesiones/usuario/:id",
+      activas: "GET /historial-sesiones/activas/:id",
+      estadisticas: "GET /historial-sesiones/estadisticas/:id"
     },
     database: "ASISTENCIA - MongoDB Atlas",
-    status: "Sprint 1 Completo 🚀 - Examen US#1 ✅"
+    colecciones: 8,
+    status: "Sprint 1 + Examen Completo 🚀",
+    github: "https://github.com/Zod0808/SM2_EXAMEN_PRACTICO.git"
   });
 });
 
@@ -371,6 +390,91 @@ app.put('/usuarios/:id/password', async (req, res) => {
     res.json({ message: 'Contraseña actualizada exitosamente' });
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar contraseña' });
+  }
+});
+
+// Ruta para cambiar contraseña con validación (Historia de Usuario #2 - Examen)
+app.post('/auth/change-password', async (req, res) => {
+  try {
+    const { userId, currentPassword, newPassword } = req.body;
+
+    // Validar campos requeridos
+    if (!userId || !currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan campos requeridos: userId, currentPassword, newPassword'
+      });
+    }
+
+    // Buscar usuario
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    // Verificar contraseña actual con bcrypt
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+      console.log(`❌ Intento fallido de cambio de contraseña para usuario: ${user.email}`);
+      return res.status(401).json({
+        success: false,
+        message: 'Contraseña actual incorrecta'
+      });
+    }
+
+    // Validar requisitos de la nueva contraseña
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe tener al menos 8 caracteres'
+      });
+    }
+
+    // Validar mayúscula
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe contener al menos una mayúscula'
+      });
+    }
+
+    // Validar número
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe contener al menos un número'
+      });
+    }
+
+    // Validar carácter especial
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe contener al menos un carácter especial'
+      });
+    }
+
+    // Actualizar contraseña (se hashea automáticamente por el middleware pre-save)
+    user.password = newPassword;
+    user.fecha_actualizacion = new Date();
+    await user.save();
+
+    console.log(`✅ Contraseña actualizada exitosamente para usuario: ${user.email}`);
+
+    res.json({
+      success: true,
+      message: 'Contraseña actualizada exitosamente'
+    });
+  } catch (err) {
+    console.error('❌ Error en cambio de contraseña:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar contraseña',
+      error: err.message
+    });
   }
 });
 

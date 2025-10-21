@@ -136,6 +136,45 @@ class ApiService {
     }
   }
 
+  // Cambiar contraseña con validación (Historia de Usuario #2)
+  Future<void> changePasswordWithValidation({
+    required String userId,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/auth/change-password'),
+        headers: _headers,
+        body: json.encode({
+          'userId': userId,
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] != true) {
+          throw Exception(data['message'] ?? 'Error al cambiar contraseña');
+        }
+      } else if (response.statusCode == 401) {
+        throw Exception('Contraseña actual incorrecta');
+      } else if (response.statusCode == 400) {
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'La nueva contraseña no cumple los requisitos');
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Error al cambiar contraseña');
+      }
+    } catch (e) {
+      if (e is Exception) {
+        rethrow;
+      }
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
   // Actualizar estado de usuario (activar/desactivar)
   Future<void> updateUserStatus(String userId, String newStatus) async {
     try {

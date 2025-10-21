@@ -50,15 +50,27 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Cambiar contraseña
-  Future<bool> changePassword(String newPassword) async {
-    if (_currentUser == null) return false;
+  // Cambiar contraseña (Historia de Usuario #2)
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_currentUser == null) {
+      _setError('No hay usuario autenticado');
+      return false;
+    }
 
     _setLoading(true);
     _clearError();
 
     try {
-      await _apiService.changePassword(_currentUser!.id, newPassword);
+      // Llamar al endpoint de cambio de contraseña con validación
+      await _apiService.changePasswordWithValidation(
+        userId: _currentUser!.id,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      
       _setLoading(false);
       return true;
     } catch (e) {
